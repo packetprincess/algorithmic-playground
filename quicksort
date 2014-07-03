@@ -49,39 +49,62 @@ genarray(){
     done
 }
 
+swapit(){
+    [[ $DBG ]] && echo "Swapping"
+    local TMP POS1 POS2
+    POS1=$1
+    POS2=$2
+    TMP=${SORTED_BEAUTY[$POS1]}
+    SORTED_BEAUTY[$POS1]=${SORTED_BEAUTY[$POS2]}
+    SORTED_BEAUTY[$POS2]=$TMP
+}
+
 # Partition Function
 # This function partitions the array into lower and higher
 # arrays, then places the pivot between them.  
 partition(){
     
     # Initialize end-of-array counter and set the pivot there.
-    j=$LEN
-    PIVOT=${UNSORTED_MESS[$j-1]} && [[ $DBG ]] && echo "Pivot is $PIVOT"
+    j=$LEN-1
+    PIVOT_POS=$j
+    PIVOT=${SORTED_BEAUTY[$j]} && [[ $DBG ]] && echo "Pivot is $PIVOT"
     
     # Iterate through array
     for ((i=0; i<$j; i++)); do
-	[[ $DBG ]] && printf "\nChecking element $i: ${UNSORTED_MESS[$i]}..."
+
+	[[ $DBG ]] && printf "\nChecking element $i: ${SORTED_BEAUTY[$i]}..."
+
 	# Compare each element in the lower partition to the pivot, and swap 
         # it with an element in the higher partition if it's greater.
-	if [[ ${UNSORTED_MESS[$i]} -gt $PIVOT ]]; then
+	if [[ ${SORTED_BEAUTY[$i]} -gt $PIVOT ]]; then
+
 	    [[ $DBG ]] && printf "Greater than $PIVOT!\n"
-	    for ((j=$j-1; j>$i; j--)); do
-		[[ $DBG ]] && printf "\n\t Checking element $j: ${UNSORTED_MESS[$j]}..."
-		if [[ ${UNSORTED_MESS[$j]} -lt $PIVOT ]]; then
+
+	    for ((j=$j; j>$i; j--)); do
+
+		[[ $DBG ]] && printf "\n\t Checking element $j: ${SORTED_BEAUTY[$j]}.."
+
+		if [[ ${SORTED_BEAUTY[$j]} -lt $PIVOT ]]; then
+
 		    [[ $DBG ]] && printf "Less than $PIVOT! Swapping with element $i!\n"
-		    swap 
+		    swapit $i $j
 		    break # Go to the next i.
 		fi
 
 	    done
 	fi
+	[[ $i -eq $j ]] && break
     done
     # Swap the pivot with the entry at j or i, which should be equal here.
-    [[ $DBG ]] && printf "Swapping pivot into place at partition point $i=$j!"
+    [[ $DBG ]] && printf "Swapping pivot ($PIVOT) into place at partition point $i=$j!\n"
+    swapit $i $PIVOT_POS
 }
 
 qsort(){
-    partition $1
+    partition
+    for (( i=0; i<$LEN; i++)); do
+	[[ $DBG ]] && echo "$i: ${SORTED_BEAUTY[$i]}"
+    done
 #    qsort $1
 
 
@@ -89,6 +112,6 @@ qsort(){
 
 [[ ! $LEN ]] && LEN=50 && [[ $DBG ]] && echo "LEN not specified, default is 50 elements."
 genarray $LEN
-qsort $UNSORTED_MESS
+qsort 
 
 exit 0
