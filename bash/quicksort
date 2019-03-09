@@ -1,0 +1,117 @@
+#!/bin/bash
+###############################################################################
+# Quicksort implementation                                                    #
+#                                                                             #
+# Jamie Schwettmann                                                           #
+# jamie.schwettmann@gmail.com                                                 #
+# @complexbits                                                                #
+#                                                                             #
+# Quicksort works thus:                                                       #
+# 1. Select a pivot (at the end of the array)                                 #
+# 2. Iterate through the array, and at each iteration, compare the value      #
+#    in the current position to the value in the pivot.                       #
+# 3. If it's less than or equal, leave it in place. If it's more than,        #
+#    swap it with an element iterated from the end of the array, which        #
+#    is lower than the pivot                                                  #
+###############################################################################
+
+NOW=`date +%m%d%y-%H%M`
+THIS=`basename $0`
+
+# Usage message
+usage_msg(){
+    printf "Usage: $THIS <options>\n\n"
+    printf "\t This script implements quicksort on a 50-len array\n"
+    printf "\t of pseudorandom numbers. Use the -d flag to display\n"
+    printf "\t debug messages.\n"
+}
+
+# Parse arguments
+while [ ${#@} -gt 0 ]; do
+    case $1 in
+	d|-d|--debug|v|-v|--verbose) # Debug option
+	    DBG=1 && shift 1 && echo "Debug set.";;
+	-l|--len) # Specify length of array to sort
+	    LEN=$2 && shift 2 && [[ $DBG ]] && echo "Sorting array length $LEN";;
+	*) usage_msg && exit 0;;
+    esac
+done
+
+# Function to generate random-ish data and fill a 50-length array
+genarray(){
+
+    export UNSORTED_MESS SORTED_BEAUTY
+    
+    for ((i=0; i<$1; i++)); do
+	UNSORTED_MESS[$i]=$RANDOM
+	SORTED_BEAUTY[$i]=${UNSORTED_MESS[$i]}
+	[[ $DBG ]] && echo "$i: ${UNSORTED_MESS[$i]}"
+    done
+}
+
+swapit(){
+    [[ $DBG ]] && echo "Swapping"
+    local TMP POS1 POS2
+    POS1=$1
+    POS2=$2
+    TMP=${SORTED_BEAUTY[$POS1]}
+    SORTED_BEAUTY[$POS1]=${SORTED_BEAUTY[$POS2]}
+    SORTED_BEAUTY[$POS2]=$TMP
+}
+
+# Partition Function
+# This function partitions the array into lower and higher
+# arrays, then places the pivot between them.  
+partition(){
+    
+    # Initialize end-of-array counter and set the pivot there.
+    j=$LEN-1
+    PIVOT_POS=$j
+    PIVOT=${SORTED_BEAUTY[$j]} && [[ $DBG ]] && echo "Pivot is $PIVOT"
+    
+    # Iterate through array
+    for ((i=0; i<$j; i++)); do
+
+	[[ $DBG ]] && printf "\nChecking element $i: ${SORTED_BEAUTY[$i]}..."
+
+	# Compare each element in the lower partition to the pivot, and swap 
+        # it with an element in the higher partition if it's greater.
+	if [[ ${SORTED_BEAUTY[$i]} -gt $PIVOT ]]; then
+
+	    [[ $DBG ]] && printf "Greater than $PIVOT!\n"
+
+	    for ((j=$j; j>$i; j--)); do
+
+		[[ $DBG ]] && printf "\n\t Checking element $j: ${SORTED_BEAUTY[$j]}.."
+
+		if [[ ${SORTED_BEAUTY[$j]} -lt $PIVOT ]]; then
+
+		    [[ $DBG ]] && printf "Less than $PIVOT! Swapping with element $i!\n"
+		    swapit $i $j
+		    break # Go to the next i.
+		fi
+
+	    done
+	fi
+	[[ $i -eq $j ]] && break
+    done
+    # Swap the pivot with the entry at j or i, which should be equal here.
+    [[ $DBG ]] && printf "Swapping pivot ($PIVOT) into place at partition point $i=$j!\n"
+    swapit $i $PIVOT_POS
+}
+
+qsort(){
+    partition
+    for (( i=0; i<$LEN; i++)); do
+	[[ $DBG ]] && echo "$i: ${SORTED_BEAUTY[$i]}"
+    done
+#    qsort $1
+
+
+}
+
+[[ ! $LEN ]] && LEN=50 && [[ $DBG ]] && echo "LEN not specified, default is 50 elements."
+genarray $LEN
+qsort 
+
+exit 0
