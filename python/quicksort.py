@@ -1,50 +1,61 @@
 #!/usr/bin/python
 # Quicksort in python
 
-# This function takes last element as pivot, places 
-# the pivot element at its correct position in sorted 
-# array, and places all smaller (smaller than pivot) 
-# to left of pivot and all greater elements to right 
-# of pivot 
-def partition(arr,low,high): 
-    i = ( low-1 )         # index of smaller element 
-    pivot = arr[high]     # pivot 
-  
-    for j in range(low , high): 
-  
-        # If current element is smaller than or 
-        # equal to pivot 
-        if   arr[j] <= pivot: 
-          
-            # increment index of smaller element 
-            i = i+1 
-            arr[i],arr[j] = arr[j],arr[i] 
-  
-    arr[i+1],arr[high] = arr[high],arr[i+1] 
-    return(i+1) 
-  
-# The main function that implements QuickSort 
-# arr[] --> Array to be sorted, 
-# low  --> Starting index, 
-# high  --> Ending index 
-  
-# Function to do Quick sort 
-def quickSort(arr,low,high): 
-    if low < high: 
-  
-        # pi is partitioning index, arr[p] is now 
-        # at right place 
-        pi = partition(arr,low,high) 
-  
-        # Separately sort elements before 
-        # partition and after partition 
-        quickSort(arr, low, pi-1) 
-        quickSort(arr, pi+1, high) 
-  
+#import datetime
+from datetime import datetime
+
+
+start_time = datetime.now()
+
+import argparse
+import sys
+
+from qs_functions import *
+
+# Usage message
+def usage():
+    print "Usage: quicksort.py <list of integers to sort>"
+    print "\nProgram will return quicksort-sorted list, number of elements, time to run, and complexity analysis."
+    sys.exit()
+
+# Check to see that inputs have been provided:
+if len(sys.argv)==1:
+    print "** ERROR: Quicksort requires a list of integers"
+    usage()
+
+# Print intro message
+print "\nWelcome to Quicksort!"
+
+# Parse arguments
+arr=[] #instantiate array
+arr_length=0
+for arg in sys.argv[1:]: # iterate through inputs
+    # ensure the inputs are integers
+    try: 
+        arg=int(arg) 
+    except:
+        print "** ERROR: Quicksort requires a list of integers"
+        usage()
+    # add the inputs to the array
+    arr.append(arg) 
+    arr_length=arr_length+1
+
+print "\nYou asked to sort:" 
+# print the array
+for i in range(arr_length):
+  print ("%d" %arr[i]),
 # Driver code to test above 
-arr = [10, 7, 8, 9, 1, 5] 
-n = len(arr) 
-quickSort(arr,0,n-1) 
-print ("Sorted array is:") 
-for i in range(n): 
-    print ("%d" %arr[i]), 
+#arr = [10, 7, 8, 9, 1, 5] 
+
+print ""
+quickSort(arr,0,arr_length-1) 
+print "\nSorted array is:" 
+for i in range(arr_length): 
+    print ("%d" %arr[i]),
+
+runtime=get_millis(start_time)
+#print ("Quicksort sorted %d elements in %d seconds" %arr_length %ms)
+print "\n"
+print ("Quicksort processed %d elements" %arr_length),
+print ("in %d ms" %runtime),
+print "\n"
